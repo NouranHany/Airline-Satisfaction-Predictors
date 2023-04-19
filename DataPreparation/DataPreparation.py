@@ -484,7 +484,7 @@ def visualize_categorical_data(x_data, y_data):
     # set dark background
     plt.style.use('dark_background')
     plt.rcParams['figure.dpi'] = 300
-    fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(30, 5*num_rows))
+    fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(20, 5*num_rows))
 
     # loop over all pairs of columns and create a heatmap for each pair
     for i, (col1, col2) in enumerate(cat_pairs):
@@ -523,18 +523,24 @@ def visualize_categorical_data(x_data, y_data):
         ax.set_xticklabels(ct.columns)
         ax.set_yticklabels(ct.index)
         ax.set_xlabel(col2)
-        ax.set_ylabel(col1)
+        #ax.set_ylabel(col1)
 
         # Setting the text for each cell
         for i in range(len(ct.index)):
             for j in range(len(ct.columns)):
                 text = ax.text(j, i, props[i,j], ha='center', va='center', color='deeppink')
 
+    # remove empty plots
+    for i in range(len(cat_pairs), num_rows*num_cols):
+        row_idx = i // num_cols
+        col_idx = i % num_cols
+        ax = axes[row_idx, col_idx]
+        ax.axis('off')
+        
 
     # adjust the spacing between subplots and show the plot
     plt.subplots_adjust(wspace=0.4, hspace=0.4)
     plt.show()
-
 
 
 
