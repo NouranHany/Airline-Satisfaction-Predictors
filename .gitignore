@@ -1,1 +1,3 @@
 **.csv
+Tests/*
+**/__pycache__/*
