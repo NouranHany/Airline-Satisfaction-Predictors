@@ -14,6 +14,7 @@ import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 import math
 from itertools import combinations
+from scipy.stats import chi2_contingency
 
 ### Initialize SparkSession
 spark = SparkSession.builder.appName("AirlineSatisfaction").getOrCreate()
@@ -556,3 +557,148 @@ def convey_insights(bullets_arr):
     # display the markdown string
     markdown_str += '</font>'
     display(Markdown(markdown_str))
+
+# TODO: Consider calculating a Normalized entropy
+def calc_entropy(values, calc_max):
+    '''
+    Calculates the entropy of a given list of values.
+
+    Args:
+        values (list or array-like): The input values for which entropy needs to be calculated.
+        calc_max (bool): A flag indicating whether to calculate the maximum entropy or not.
+
+    Returns:
+        float: The calculated entropy value.
+    '''
+    if calc_max:
+        values_count = len(pd.Series(values).unique())
+        value_counts = [1/values_count]*values_count
+    else:
+        value_counts = pd.Series(values).value_counts(normalize=True)
+    entropy = -sum(p * math.log(p) for p in value_counts)
+    return entropy
+
+def plot_boxplots(df, numerical_columns, target_variable):
+    '''
+    Boxplot for numerical variables w.r.t the target variable (satisfaction)
+    '''
+    target_categories = df[target_variable].unique()
+    plt.figure(figsize=(8, 8))
+    for i, numerical_col in enumerate(numerical_columns):
+        ax = plt.subplot(2, len(numerical_columns)//2, i+1)
+        ax.boxplot([df[numerical_col][df[target_variable]==category] for category in target_categories])
+        ax.set_xticklabels(df[target_variable].unique())
+        ax.set_ylabel(numerical_col)
+    plt.tight_layout()
+    plt.show()
+
+def numerical_vs_categorical_barplots(nominal_columns, ordinal_columns, numerical_columns, target_variable, df):
+    """
+    Creates a set of bar plots to visualize the relationship between numerical and categorical variables in a DataFrame.
+
+    Parameters
+    ----------
+    nominal_columns : list of str
+        List of nominal (categorical) columns to include in the bar plots.
+    ordinal_columns : list of str
+        List of ordinal (categorical) columns to include in the bar plots.
+    numerical_columns : list of str
+        List of numerical columns to include in the bar plots.
+    target_variable : str
+        The name of the target variable column to use for coloring the plots.
+    df : pandas.DataFrame
+        The DataFrame containing the columns to be plotted.
+    """
+    for numerical_col in numerical_columns:
+        plt.figure(figsize=(8, 12))
+        for i, categorical_col in enumerate(nominal_columns+ordinal_columns):
+            ax = plt.subplot(7, 3, i+1)
+            sns.stripplot(x=categorical_col, y=numerical_col, hue=target_variable, data=df, palette='Set2', legend=False, size=1.5)
+            ax.set_ylabel(numerical_col if "in Minutes" not in numerical_col else numerical_col[:-11])
+            ax.tick_params(axis='x', labelrotation=12)
+        plt.tight_layout()
+        plt.show()
+
+def association_bet_ordinal_columns(df, ordinal_columns, method='spearman'):
+    """
+    Creates a heatmap to visualize the association between ordinal columns in a DataFrame.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame containing the ordinal columns.
+    ordinal_columns : list of str
+        List of ordinal columns to include in the heatmap.
+    method : str, optional
+        The correlation method to be used. Default is 'spearman'.
+    """
+    df_ordinal = df.loc[:, ordinal_columns]
+    corr = df_ordinal.corr(method=method)
+
+    # Create a heatmap of the correlation matrix
+    plt.figure(figsize=(12, 10))  # Increase the figsize as desired
+    sns.heatmap(corr, annot=True, cmap='coolwarm', center=0, linewidths=0.5)
+    plt.xticks(fontsize=6)
+    plt.yticks(fontsize=6)
+    plt.show()
+
+def nominal_columns_dependency(df, nominal_columns):
+    """
+    Calculates the dependency between nominal columns in a DataFrame using the chi-square test.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame containing the nominal columns.
+    nominal_columns : list of str
+        List of nominal columns to calculate the dependency between.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame showing the p-values of the chi-square test between each pair of nominal columns.
+    """
+    p_value_df = pd.DataFrame(index=nominal_columns, columns=nominal_columns)
+
+    for col_i in nominal_columns:
+        for col_j in nominal_columns:
+            contingency_table = pd.crosstab(df[col_i], df[col_j])
+            # Perform chi-square test
+            chi2, p_value, dof, ex = chi2_contingency(contingency_table)
+            p_value_df.at[col_i, col_j] = p_value
+
+    return p_value_df
+
+def nominal_statistics(df, nominal_columns):
+    """
+    Studing the central Tendancy and spread of Nominal Features.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame containing the nominal columns.
+    nominal_columns : list of str
+        List of nominal columns to calculate their central tendancy and spread.
+    """
+    mode = df.loc[:, nominal_columns].mode().rename(index={0: 'mode'})
+    entropies = pd.DataFrame(df[nominal_columns].apply(calc_entropy, calc_max=False), index=nominal_columns, columns=["Entropy"]).T
+    max_entropies = pd.DataFrame(df[nominal_columns].apply(calc_entropy, calc_max=True), index=nominal_columns, columns=["Max Entropy"]).T
+    statistics = pd.concat([mode, entropies, max_entropies])
+    return statistics
+
+def ordinal_statistics(df, ordinal_columns):
+    """
+    Studing the central Tendancy and spread of Ordinal Features.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame containing the ordinal columns.
+    nominal_columns : list of str
+        List of nominal columns to calculate their central tendancy and spread.
+
+    """
+    percentiles = df.loc[:, ordinal_columns].describe().drop(['mean', 'std'])
+    mode = df.loc[:, ordinal_columns].mode().rename(index={0: 'mode'})
+    statistics = pd.concat([percentiles, mode])
+    return statistics
