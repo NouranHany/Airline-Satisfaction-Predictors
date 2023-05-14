@@ -20,7 +20,7 @@ from scipy.stats import chi2_contingency
 spark = SparkSession.builder.appName("AirlineSatisfaction").getOrCreate()
 sc = spark.sparkContext                 # shorthand
 
-def read_data(split='train', scales=[], encode=False, keep_y=False):
+def read_data(split='train', scales=['numerical', 'categorical', 'ordinal'], encode=False):
     '''
     Reads the data from the csv files and returns the x_data and y_data
     split: 'train', 'val', 'all' decides which split of the data to return
@@ -48,8 +48,7 @@ def read_data(split='train', scales=[], encode=False, keep_y=False):
     indexer = StringIndexer(inputCol='satisfaction', outputCol='satisfaction_index')
     y_data = indexer.fit(y_data).transform(y_data)
     y_data = y_data.select('satisfaction_index')
-    if not keep_y:
-        x_data = dataset.drop('satisfaction')               # drop the satisfaction column
+    x_data = dataset.drop('satisfaction')               # drop the satisfaction column
         
     # convert the Arrival Delay in Minutes column to integer
     x_data = x_data.withColumn('Arrival Delay in Minutes', x_data['Arrival Delay in Minutes'].cast(IntegerType()))
@@ -88,7 +87,10 @@ def read_data(split='train', scales=[], encode=False, keep_y=False):
                 x_data = x_data.withColumn(col+'_freq', x_data[col+'_freq']/norm)
         
     
-    return x_data, y_data
+    xy_data = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
+    col_groups = columns_struct['numerical'], columns_struct['ordinal'], columns_struct['categorical']
+    target = 'satisfaction_index'
+    return x_data, y_data, xy_data, col_groups, target
 
 
 
@@ -553,7 +555,7 @@ def convey_insights(bullets_arr):
     markdown_str = '<h3><font color="pink" size=5>Insights</font></h3> <font size=4>\n'
     
     for bullet in bullets_arr:
-        markdown_str += '<font color="pink">✦</font> ' + bullet + '<br>'
+        markdown_str += '<font color="pink">✦</font> ' + bullet + '<br>' + '<br>'
     # display the markdown string
     markdown_str += '</font>'
     display(Markdown(markdown_str))
@@ -583,6 +585,8 @@ def plot_boxplots(df, numerical_columns, target_variable):
     Boxplot for numerical variables w.r.t the target variable (satisfaction)
     '''
     target_categories = df[target_variable].unique()
+    plt.style.use('dark_background')
+    plt.rcParams['figure.dpi'] = 300
     plt.figure(figsize=(8, 8))
     for i, numerical_col in enumerate(numerical_columns):
         ax = plt.subplot(2, len(numerical_columns)//2, i+1)
@@ -610,6 +614,8 @@ def numerical_vs_categorical_barplots(nominal_columns, ordinal_columns, numerica
         The DataFrame containing the columns to be plotted.
     """
     for numerical_col in numerical_columns:
+        plt.style.use('dark_background')
+        plt.rcParams['figure.dpi'] = 200        # increase plot resolution
         plt.figure(figsize=(8, 12))
         for i, categorical_col in enumerate(nominal_columns+ordinal_columns):
             ax = plt.subplot(7, 3, i+1)
@@ -636,8 +642,10 @@ def association_bet_ordinal_columns(df, ordinal_columns, method='spearman'):
     corr = df_ordinal.corr(method=method)
 
     # Create a heatmap of the correlation matrix
+    plt.style.use('dark_background')
+    plt.rcParams['figure.dpi'] = 200        # increase plot resolution
     plt.figure(figsize=(12, 10))  # Increase the figsize as desired
-    sns.heatmap(corr, annot=True, cmap='coolwarm', center=0, linewidths=0.5)
+    sns.heatmap(corr, annot=True, cmap='cool', center=0, linewidths=0.5)
     plt.xticks(fontsize=6)
     plt.yticks(fontsize=6)
     plt.show()
