@@ -587,8 +587,8 @@ def plot_boxplots(x_data, y_data, numerical_columns, target_variable):
     '''
     df = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
 
-    # Impute missing arrival delays with their mode
-    df['Arrival Delay in Minutes'].fillna(df['Arrival Delay in Minutes'].mode()[0], inplace=True)
+    # Impute missing arrival delays with their median
+    df['Arrival Delay in Minutes'].fillna(df['Arrival Delay in Minutes'].median(), inplace=True)
 
     target_categories = df[target_variable].unique()
     plt.style.use('dark_background')
