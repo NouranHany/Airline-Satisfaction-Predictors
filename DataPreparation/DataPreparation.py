@@ -4,7 +4,8 @@ from pyspark.ml.feature import StringIndexer
 import matplotlib.pyplot as plt
 import os
 from DataPreparation import *
-from pyspark.sql.functions import monotonically_increasing_id
+from pyspark.sql.functions import monotonically_increasing_id, col, lit, when
+
 import numpy as np
 import seaborn as sns
 from IPython.display import display, HTML, Markdown, Latex
@@ -41,7 +42,7 @@ def read_data(split='train', scales=['numerical', 'categorical', 'ordinal'], enc
         train_dataset = spark.read.csv(train_path, header=True, inferSchema=True).drop('_c0').drop('id')
         val_dataset = dataset.union(spark.read.csv(val_path, header=True, inferSchema=True).drop('_c0').drop('id'))
         dataset = train_dataset.union(val_dataset)
-           
+
 
     ### form y_data and x_data from dataset
     y_data = dataset.select('satisfaction')             # select the satisfaction column
@@ -565,7 +566,7 @@ def calc_entropy(values, calc_max):
     '''
     Calculates the entropy of a given list of values.
 
-    Args:
+    Parameters:
         values (list or array-like): The input values for which entropy needs to be calculated.
         calc_max (bool): A flag indicating whether to calculate the maximum entropy or not.
 
@@ -580,10 +581,15 @@ def calc_entropy(values, calc_max):
     entropy = -sum(p * math.log(p) for p in value_counts)
     return entropy
 
-def plot_boxplots(df, numerical_columns, target_variable):
+def plot_boxplots(x_data, y_data, numerical_columns, target_variable):
     '''
     Boxplot for numerical variables w.r.t the target variable (satisfaction)
     '''
+    df = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
+
+    # Impute missing arrival delays with their mode
+    df['Arrival Delay in Minutes'].fillna(df['Arrival Delay in Minutes'].mode()[0], inplace=True)
+
     target_categories = df[target_variable].unique()
     plt.style.use('dark_background')
     plt.rcParams['figure.dpi'] = 300
@@ -596,7 +602,7 @@ def plot_boxplots(df, numerical_columns, target_variable):
     plt.tight_layout()
     plt.show()
 
-def numerical_vs_categorical_barplots(nominal_columns, ordinal_columns, numerical_columns, target_variable, df):
+def numerical_vs_categorical_barplots(nominal_columns, ordinal_columns, numerical_columns, target_variable, x_data, y_data):
     """
     Creates a set of bar plots to visualize the relationship between numerical and categorical variables in a DataFrame.
 
@@ -610,9 +616,11 @@ def numerical_vs_categorical_barplots(nominal_columns, ordinal_columns, numerica
         List of numerical columns to include in the bar plots.
     target_variable : str
         The name of the target variable column to use for coloring the plots.
-    df : pandas.DataFrame
+    x_data : pandas.DataFrame
         The DataFrame containing the columns to be plotted.
     """
+    df = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
+
     for numerical_col in numerical_columns:
         plt.style.use('dark_background')
         plt.rcParams['figure.dpi'] = 200        # increase plot resolution
@@ -625,19 +633,20 @@ def numerical_vs_categorical_barplots(nominal_columns, ordinal_columns, numerica
         plt.tight_layout()
         plt.show()
 
-def association_bet_ordinal_columns(df, ordinal_columns, method='spearman'):
+def association_bet_ordinal_columns(x_data, y_data, ordinal_columns, method='spearman'):
     """
     Creates a heatmap to visualize the association between ordinal columns in a DataFrame.
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    x_data : pandas.DataFrame
         The DataFrame containing the ordinal columns.
     ordinal_columns : list of str
         List of ordinal columns to include in the heatmap.
     method : str, optional
         The correlation method to be used. Default is 'spearman'.
     """
+    df = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
     df_ordinal = df.loc[:, ordinal_columns]
     corr = df_ordinal.corr(method=method)
 
@@ -650,13 +659,13 @@ def association_bet_ordinal_columns(df, ordinal_columns, method='spearman'):
     plt.yticks(fontsize=6)
     plt.show()
 
-def nominal_columns_dependency(df, nominal_columns):
+def nominal_columns_dependency(x_data, y_data, nominal_columns):
     """
     Calculates the dependency between nominal columns in a DataFrame using the chi-square test.
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    x_data : pandas.DataFrame
         The DataFrame containing the nominal columns.
     nominal_columns : list of str
         List of nominal columns to calculate the dependency between.
@@ -666,6 +675,7 @@ def nominal_columns_dependency(df, nominal_columns):
     pandas.DataFrame
         A DataFrame showing the p-values of the chi-square test between each pair of nominal columns.
     """
+    df = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
     p_value_df = pd.DataFrame(index=nominal_columns, columns=nominal_columns)
 
     for col_i in nominal_columns:
@@ -677,36 +687,69 @@ def nominal_columns_dependency(df, nominal_columns):
 
     return p_value_df
 
-def nominal_statistics(df, nominal_columns):
+def numerical_statistics(x_data, y_data, numerical_cols):
+    xy_data = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
+    return xy_data.loc[:, numerical_cols].describe()
+
+def nominal_statistics(x_data, y_data, nominal_columns):
     """
     Studing the central Tendancy and spread of Nominal Features.
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    x_data : pandas.DataFrame
         The DataFrame containing the nominal columns.
     nominal_columns : list of str
         List of nominal columns to calculate their central tendancy and spread.
     """
+    df = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
     mode = df.loc[:, nominal_columns].mode().rename(index={0: 'mode'})
     entropies = pd.DataFrame(df[nominal_columns].apply(calc_entropy, calc_max=False), index=nominal_columns, columns=["Entropy"]).T
     max_entropies = pd.DataFrame(df[nominal_columns].apply(calc_entropy, calc_max=True), index=nominal_columns, columns=["Max Entropy"]).T
     statistics = pd.concat([mode, entropies, max_entropies])
     return statistics
 
-def ordinal_statistics(df, ordinal_columns):
+def ordinal_statistics(x_data, y_data, ordinal_columns):
     """
     Studing the central Tendancy and spread of Ordinal Features.
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    x_data : pandas.DataFrame
         The DataFrame containing the ordinal columns.
     nominal_columns : list of str
         List of nominal columns to calculate their central tendancy and spread.
 
     """
+    df = pd.concat([x_data.toPandas(), y_data.toPandas()], axis=1)
     percentiles = df.loc[:, ordinal_columns].describe().drop(['mean', 'std'])
     mode = df.loc[:, ordinal_columns].mode().rename(index={0: 'mode'})
     statistics = pd.concat([percentiles, mode])
     return statistics
+
+def count_missing_values(df):
+    """
+    Count the number of missing values in each column of a PySpark DataFrame.
+
+    Parameters:
+        df (pyspark.sql.dataframe.DataFrame): The PySpark DataFrame to count missing values in.
+
+    Returns:
+        pandas.core.frame.DataFrame: A DataFrame showing the count of missing values for each column.
+    """
+    missing_counts = df.toPandas().isna().sum()
+    return pd.DataFrame({'Missing Count': missing_counts}).T
+
+def replace_outliers_with_median(df, column_names):
+    for column_name in column_names:
+        # Calculate median, Q1, and Q3
+        q1_value, median_value, q3_value = df.approxQuantile(column_name, [0.25, 0.5, 0.75], 0)
+        # Calculate IQR and threshold
+        iqr_value = q3_value - q1_value
+        threshold = 1.5 * iqr_value + q3_value
+        # Replace outliers with median value
+        df = df.withColumn(
+            column_name,
+            when(col(column_name) > threshold, lit(median_value)).otherwise(col(column_name)).cast(IntegerType())
+        )
+    return df
