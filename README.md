@@ -5,7 +5,7 @@ The airline industry is undeniably massive with an annual revenue exceeding $800
 
 ## 🚀 Pipeline
 Our approach to said problem utilized the following pipeline
-<img width="941" alt="image" src="https://github.com/NouranHany/Big-data-project/assets/49572294/68e9a6ae-70a9-49ac-ba7c-92e5dff9536b">
+<img width="941" alt="image" src="./Assets/1.png">
 
 ## 📂 Folder Structure
 The following is the implied folder structure:
@@ -235,7 +235,7 @@ In the following we will take you through a cursory glance of the workflow, the 
 #### ◉ Prior Class Distribution
 In this we study if there is any imbalance among the satisfaction levels of people involved in the dataset.
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/55c978fa-1bab-453a-aef5-d0451f8412ec)
+![image](./Assets/2.png)
 
 #### ◉ Basics of Each Feature
 This provides a description, type and possible values for each feature.
@@ -403,20 +403,20 @@ For each type of feature, we consider measures of central tendency and spread. T
 #### ◉ Feature Distributions
 Here we analyze the distributions of each feature to look for any special patterns.
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/3c8fcea7-6f6f-4015-aa0c-1f35d902f180)
+![image](./Assets/3.png)
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/dd73d309-d186-48b5-84ce-02054771bc64)
+![image](./Assets/4.png)
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/e61e54e1-fe05-4bd8-b1ad-55e09ee308b0)
+![image](./Assets/5.png)
 
 #### ◉ Feature Distributions per Class
 This provides the same analysis as above, but per class.
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/fc182dc9-5cf4-4714-ab81-ba5ae11a3769)
+![image](./Assets/6.png)
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/007e0e0d-da8a-4e78-9175-de1c05040392)
+![image](./Assets/7.png)
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/d22eb455-9b35-4274-969e-7d575d4895fb)
+![image](./Assets/8.png)
 
 ### 🪂🪂 Correlations
 
@@ -476,17 +476,17 @@ Here, we set $\alpha = 0.05$ and hence, if the p-value for the test done on two 
 #### ◉ Associationss between Categorical & Numerical Features
 We have used Pearson's correlation ratio to find associations between all possible numerical and categorical features
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/707df83e-8b42-4d88-9061-672324d165c2)
+![image](./Assets/9.png)
 
 #### ◉ Monotonic Association between Ordinal Variables
 We have use Spearman's to find monotonic associations between ordinal variables
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/b9a6c1f4-14a3-4702-a89f-0650c12d2623)
+![image](./Assets/10.png)
 
 ####  ◉ Correlations between Numerical Features
 We have use Pearson's to study linear correlation between numerical variables
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/35e4e9d7-84f1-46ab-9cfa-93b0a9c51257)
+![image](./Assets/11.png)
 
 #### ◉ Naive Bayes Assumption
 Related to dependence is also testing the Naive bayes assumption. We hae provided an automated way for that with the sample output:
@@ -514,27 +514,27 @@ This does not stop up from using the model as research has demonstrated that it 
 #### ◉ Seperability and Distribution of Numerical Features
 We prepared box plots to study the distribution of the numerical features for each class in the target
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/7bf1faad-69ad-44d4-ae75-727aef5e1a8e)
+![image](./Assets/12.png)
 
 #### ◉ Seperability and Distribution of Numerical Pairs
 Then we started analyzing all pairs to see if separability gets better
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/355a7dcd-3fe8-4bff-86da-8749f95dfc20)
+![image](./Assets/13.png)
 
 #### ◉ Seperability and Distribution of Numerical Trios
 Then we considered all trios
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/53f5fa3a-99d9-409c-bc81-c9a2f34a2510)
+![image](./Assets/14.png)
 
 #### ◉ Seprability and Distribution of Numerical and Categorical Pairs
 We then sought interaction with all possible numerical features. The plot is much longer in the notebook.
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/c8761880-c6f1-467f-916d-136ad98ef846)
+![image](./Assets/15.png)
 
 #### ◉ Seprability and Distribution of Categorical Pairs
 And interaction among all possible categorical features. You must have enough RAM to see the full version in the notebook.
 
-<img width="1282" alt="image" src="https://github.com/NouranHany/Big-data-project/assets/49572294/01e76ede-6b0e-459f-860b-a4ac81227215">
+<img width="1282" alt="image" src="./Assets/16.png">
 
 
 
@@ -589,7 +589,7 @@ The following shows a sample of the strongest rules found:
 
 Where the corresponding graphic over all strong rules is
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/c4dfb959-9897-44d8-bf1c-6ecd2b5ad3b4)
+![image](./Assets/17.png)
 
 This is color plot of support against the confidence where the color represents lift and the number refers to a rule in the table.
 
@@ -620,7 +620,7 @@ We also considered initiating a Random Forest model which did not further requir
 
 We analyzed the average feature importance set by trees in the forest to yield
 
-![image](https://github.com/NouranHany/Big-data-project/assets/49572294/e589a527-929f-47cf-aa35-9d3a09c74f14)
+![image](./Assets/18.png)
 
 
 ### 📏 SVM Model
