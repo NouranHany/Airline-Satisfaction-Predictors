@@ -627,7 +627,7 @@ We analyzed the average feature importance set by trees in the forest to yield
 
 We topped off with a linear SVM model and hyperparameter search but results were not as significant as the random forest.
 
-## 📊 Result Interpreation
+## 🛬 Result Interpreation
 
 The totality of the analyses above have led us conclude the following:
 - There is a lack of satisfaction in airline travel experience (imbalance)
