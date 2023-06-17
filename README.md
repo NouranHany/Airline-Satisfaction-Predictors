@@ -638,7 +638,37 @@ The totality of the analyses above have led us conclude the following:
 
 ## 👥 Collaborators
 <!-- readme: contributors -start -->
-
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/EssamWisam">
+            <img src="https://avatars.githubusercontent.com/u/49572294?v=4" width="100;" alt="EssamWisam"/>
+            <br />
+            <sub><b>Essam</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/Halahamdy22">
+            <img src="https://avatars.githubusercontent.com/u/56937106?v=4" width="100;" alt="Halahamdy22"/>
+            <br />
+            <sub><b>Halahamdy22</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/Muhammad-saad-2000">
+            <img src="https://avatars.githubusercontent.com/u/61880555?v=4" width="100;" alt="Muhammad-saad-2000"/>
+            <br />
+            <sub><b>MUHAMMAD SAAD</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/NouranHany">
+            <img src="https://avatars.githubusercontent.com/u/59095993?v=4" width="100;" alt="NouranHany"/>
+            <br />
+            <sub><b>Noran Hany</b></sub>
+        </a>
+    </td></tr>
+</table>
 <!-- readme: contributors -end -->
 
 ## 📈 Progress Tracking
